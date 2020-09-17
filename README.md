@@ -1,20 +1,5 @@
 # SETUP
 ```{r}
-#################################################################################
-# DEFINE WORKING DIRECTORY
-#################################################################################
-where.am.I <- "casa"
-#where.am.I <- "MPI"
-# working directory
-if (where.am.I == "casa") {
-  main.folder   <- "D:/MPI-MP/Dados/Hiro/"
-  path          <- "Paper2020 - methods/R"
-} else if (where.am.I == "MPI") {
-  main.folder   <- "//mpimp-golm/USER/HOMES/Moraes/Dados/Hiro/"
-  path          <- "Paper2020 - methods/R"
-}
-# set working directory
-setwd(paste0(main.folder, path))
 library(reshape2) # melt(); citation("reshape2")
 library(dplyr)    # %>%;    citation("dplyr")
 library(plyr)     # ddply;  citation("plyr") # must be loaded after dplyr
@@ -23,6 +8,7 @@ se <- function(x, na.rm = FALSE) {
   
   sd(x) / sqrt(length(x))
 }
+
 mutate_with_error = function(.data, f) {
   # this is based on work done by someone else and published in:
   # https://www.r-bloggers.com/easy-error-propagation-in-r/
@@ -52,7 +38,6 @@ mutate_with_error = function(.data, f) {
 vars_prot <- c("Prot_Ala", "Prot_Ser")
 vars_free <- c("Free_Ala", "Free_Ser")
 vars_id   <- c("Genotype", "time")
-#################################################################################
 ```
 
 # LOAD DATA
