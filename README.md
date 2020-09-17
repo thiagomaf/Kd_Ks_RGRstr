@@ -1,8 +1,3 @@
----
-title: "Hiro'2020 - Assessing protein synthesis and degradation rates via amino acid analysis for Current Protocols in Plant Biology"
-output: html_notebook
----
-
 # SETUP
 ```{r}
 #################################################################################
