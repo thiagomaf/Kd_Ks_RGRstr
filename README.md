@@ -1,19 +1,49 @@
-# SETUP
+# LOAD LIBRARIES
+[Very briefly indicate why each library is used and include explicity bibliographic citations]
 ```{r}
 library(reshape2) # melt(); citation("reshape2")
 library(dplyr)    # %>%;    citation("dplyr")
 library(plyr)     # ddply;  citation("plyr") # must be loaded after dplyr
-se <- function(x, na.rm = FALSE) {
-  if(na.rm == TRUE) {  x <- as.vector(na.exclude(x)) }
-  
-  sd(x) / sqrt(length(x))
-}
 
+library(pander)   # pandoc.table
+```
+
+# DEFINE FUNCTIONS
+## Standard error
+The `se()` function is used to calculate the `standard error` of the mean. `x` represents a numeric vector containing replicates of a given measurement. The `na.rm = TRUE` argument indicates that by default this function ignores missing values.
+```{r echo=TRUE}
+# x:  numeric
+
+se <- function(x, na.rm = TRUE) {
+  sd(x, na.rm) / sqrt(length(x))
+}
+```
+
+```{r echo=TRUE}
+se(c(0.647603, 0.547048, 0.529873, NA, 0.908040, 0.835195))
+```
+
+## Gaussian error propagation
+The following function is based on article published on January 22, 2015 by Lee Pang in the R bloggers website (https://www.r-bloggers.com/easy-error-propagation-in-r/). It allows convenient integration with libraries of the tidyverse and the dplyr grammar. It builds on the mutate() function to apply the chain rule on any given mathematical formula.
+
+To illustrate its working let's assume one needs to propagate the error on the following calculation:
+$$
+Z = (X-Y)/(X+Y)^2
+$$
+For this case, two arguments must be input to the `mutate_with_error()` function. First, the `.data` argument receives a `data.frame` containing the mean `x` and `y` values as individual columns plus the standard error of these means as `dx` and `dy` columns. This nomenclature is important: all columns containing standard errors must be named with `d` appended to its respective mean values column. Then `f` receives a `function` object indicating the calculation to be done. _Vide_ below for more details on the structure of the datasets.
+
+Inside the `mutate_with_error()` function we have the `exprs` object which is a list of commands to be executed. First, the `deparse(f[[3]])` command transform the right-hand side of the formula `f` into a `character` string. Then, a new `character` string is constructed containing the full right-hand side of the formula that will be used to calculated the propagated error (_vide_ below). Finally, the left-hand side of the new error propagation formula is created by appending the character `d` to the original formula left-hand side (i.e. `Z` becomes `dZ`). The `mutate_with_error()` apply these commands and return the results of the calculation defined by the formula and its associated propagated error appended to `.data` and returns the results.
+
+$$
+dZ = sqrt((dX*(1/(X + Y)^2 - (X - Y) * (2 * (X + Y))/((X + Y)^2)^2))^2+(dY*(-(1/(X + Y)^2 + (X - Y) * (2 * (X + Y))/((X + Y)^2)^2)))^2)
+$$
+
+```{r}
+# .data: data.frame
+#     f: function
 mutate_with_error = function(.data, f) {
-  # this is based on work done by someone else and published in:
-  # https://www.r-bloggers.com/easy-error-propagation-in-r/
-  
   require(dplyr)
+  
   exprs = list(
     # expression to compute new variable values
     deparse(f[[3]]),
@@ -26,19 +56,27 @@ mutate_with_error = function(.data, f) {
       paste(collapse='+') %>%
       sprintf('sqrt(%s)', .)
   )
+  
   names(exprs) = c(
     deparse(f[[2]]),
     sprintf('d%s', deparse(f[[2]]))
   )
   
-  .data %>%
-    # the standard evaluation alternative of mutate()
-    mutate_(.dots=exprs)
+  #.data %>% mutate_(.dots=exprs) #### -> mutate_() is deprecated, figure out how to fix.
+  .data[names(exprs)] <- lapply(exprs , function(x) { eval(parse(text= x), envir = .data) })
+  
+  .data
 }
-vars_prot <- c("Prot_Ala", "Prot_Ser")
-vars_free <- c("Free_Ala", "Free_Ser")
-vars_id   <- c("Genotype", "time")
 ```
+
+```{r, results='asis'}
+data.frame(X = c(0.647, 0.547, 0.529, 0.908, 0.835), Y = c(1.072, 0.905, 0.877, 1.503, 1.383)) %>%
+  summarise(dX = se(X), dY = se(Y), X = mean(X), Y = mean(Y)) %>%
+  mutate_with_error(Z ~ (X-Y)/(X+Y)^2) %>%
+  select(X, dX, Y, dY, Z, dZ) %>%
+  pandoc.table()
+```
+
 
 # LOAD DATA
 
@@ -46,8 +84,17 @@ vars_id   <- c("Genotype", "time")
 * CSV files are a convenient way of loading data to R.
 
 ```{r}
+#################################################################################
+vars_prot <- c("Prot_Ala", "Prot_Ser")
+vars_free <- c("Free_Ala", "Free_Ser")
+vars_id   <- c("Genotype", "time")
+#################################################################################
+```
+
+```{r}
 # LOAD ALL NEEDED DATA
 ishihara2017_data <- read.csv2(paste0(main.folder, "older/KDKSRGR_13C.enrichment[3].csv"))
+
 # check data structure
 str(ishihara2017_data)
 ```
@@ -65,14 +112,14 @@ head(ishihara2017_data)
 
 # PREPARE DATA
 We first must transform data tables in the _wide_ format to the _tidy_ format. Check https://garrettgman.github.io/tidying/ for details. In addition to that, missing values are removed.
-We then proceed to summarise the biological replicates by calculating the mean and the standard error of the mean for each genotype in each time point.
+We then proceed to summarize the biological replicates by calculating the mean and the standard error of the mean for each genotype in each time point.
 ```{r}
 ishihara2017_melt <- melt(ishihara2017_data, id.vars = c("Genotype", "Exp", "time")) %>%
-  #filter(value != 0) %>%       #include or not?
   ddply(.(Genotype, variable, time), function(.each) {
     data.frame(value = mean(.each$value, na.rm = TRUE), dvalue = se(.each$value, na.rm = TRUE))
     }) %>%
   filter(complete.cases(.)) # remove any soapy missing values; NA
+
 head(ishihara2017_melt)
 #################################################################################
 ```
@@ -106,6 +153,7 @@ ishihara_KS <- ishihara2017_melt %>%
   mutate_with_error( KS_Ala ~ (Prot_Ala / SAt1t2) ) %>%                       # calculate KS for Alanine
   mutate_with_error( KS_Ser ~ (Prot_Ser / SAt1t2) ) %>%                       # calculate KS for Serine
   select(-c(c(vars_prot, vars_free, "SAt1t2", "time"), paste0("d", c(vars_prot, vars_free, "SAt1t2"))))   # remove unwanted columns
+
 ishihara_KS
 ```
 
@@ -134,6 +182,7 @@ ishihara_RGRp <- ishihara2017_melt %>%
   }) %>%
   mutate_with_error( RGRp ~ Glc_24 - Glc_0 ) %>%   # calculate KSloss for Serine
   select(c("Genotype", "RGRp", "dRGRp"))
+
 ishihara_RGRp
 ```
 
@@ -143,6 +192,7 @@ ishihara_KDp <- join(ishihara_KS, ishihara_RGRp, by = "Genotype") %>%
   mutate_with_error( KDp_Ala ~ KS_Ala - RGRp ) %>%
   mutate_with_error( KDp_Ser ~ KS_Ser - RGRp ) %>%
   select(c("Genotype", "KDp_Ala", "dKDp_Ala", "KDp_Ser", "dKDp_Ser"))
+
 ishihara_KDp
 ```
 
@@ -152,6 +202,7 @@ ishihara_KDp
 ```{r}
 var_glc <- "Glc"
 vars_id <- c("Genotype", "time")
+
 ishihara_RGRc <- ishihara2017_melt %>%
   subset(time %in% c(24, 120)) %>%
   subset(variable == var_glc) %>%
@@ -206,6 +257,7 @@ ishihara_KSloss <- ishihara2017_melt %>%
   mutate_with_error( KSloss_Ala ~ (log(Prot_Ala_120) - log(Prot_Ala_24)) / (4) ) %>%                             # calculate KSloss for Alanine
   mutate_with_error( KSloss_Ser ~ (log(Prot_Ser_120) - log(Prot_Ser_24)) / (4) ) %>%                             # calculate KSloss for Serine
   select(c("Genotype", "KSloss_Ala", "dKSloss_Ala", "KSloss_Ser", "dKSloss_Ser"))                                # remove unwanted columns
+
 ishihara_KSloss
 ```
 
