@@ -38,6 +38,7 @@ library(pander)   # pandoc.table
 # DEFINE FUNCTIONS
 ## Standard error
 The `se()` function is used to calculate the `standard error` of the mean. `x` represents a numeric vector containing replicates of a given measurement. The `na.rm = TRUE` argument indicates that by default this function ignores missing values.
+
 ```{r echo=TRUE}
 # x:  numeric
 
