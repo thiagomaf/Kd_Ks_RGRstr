@@ -30,6 +30,8 @@ To illustrate its working let's assume one needs to propagate the error on the f
 $$
 Z = (X-Y)/(X+Y)^2
 $$
+![Z](images/eq_Z_12px.png?raw=true "Z")
+
 For this case, two arguments must be input to the `mutate_with_error()` function. First, the `.data` argument receives a `data.frame` containing the mean `x` and `y` values as individual columns plus the standard error of these means as `dx` and `dy` columns. This nomenclature is important: all columns containing standard errors must be named with `d` appended to its respective mean values column. Then `f` receives a `function` object indicating the calculation to be done. _Vide_ below for more details on the structure of the datasets.
 
 Inside the `mutate_with_error()` function we have the `exprs` object which is a list of commands to be executed. First, the `deparse(f[[3]])` command transform the right-hand side of the formula `f` into a `character` string. Then, a new `character` string is constructed containing the full right-hand side of the formula that will be used to calculated the propagated error (_vide_ below). Finally, the left-hand side of the new error propagation formula is created by appending the character `d` to the original formula left-hand side (i.e. `Z` becomes `dZ`). The `mutate_with_error()` apply these commands and return the results of the calculation defined by the formula and its associated propagated error appended to `.data` and returns the results.
@@ -37,6 +39,7 @@ Inside the `mutate_with_error()` function we have the `exprs` object which is a 
 $$
 dZ = sqrt((dX*(1/(X + Y)^2 - (X - Y) * (2 * (X + Y))/((X + Y)^2)^2))^2+(dY*(-(1/(X + Y)^2 + (X - Y) * (2 * (X + Y))/((X + Y)^2)^2)))^2)
 $$
+![dZ](images/eq_dZ_12px.png?raw=true "dZ")
 
 ```{r}
 # .data: data.frame
