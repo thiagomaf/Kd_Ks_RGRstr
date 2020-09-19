@@ -41,8 +41,8 @@ The `se()` function is used to calculate the `standard error` of the mean. `x` r
 ```{r echo=TRUE}
 # x:  numeric
 
-se <- function(x, ...) {
-  sd(x, ...) / sqrt(length(x))
+se <- function(x, na.rm = TRUE) {
+  sd(x, na.rm) / sqrt(length(x))
 }
 ```
 
@@ -105,7 +105,8 @@ mutate_with_error = function(.data, f) {
 data.frame(X = c(0.647, 0.547, 0.529, 0.908, 0.835), Y = c(1.072, 0.905, 0.877, 1.503, 1.383)) %>%
   summarise(dX = se(X), dY = se(Y), X = mean(X), Y = mean(Y)) %>%
   mutate_with_error(Z ~ (X-Y)/(X+Y)^2) %>%
-  select(X, dX, Y, dY, Z, dZ)
+  select(X, dX, Y, dY, Z, dZ) %>%
+  pandoc.table()
 ```
 
 
