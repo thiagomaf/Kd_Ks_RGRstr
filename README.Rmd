@@ -1,6 +1,8 @@
 ---
 title: Hiro'2020 - Assessing protein synthesis and degradation rates via amino acid analysis for Current Protocols in Plant Biology
-output: html_notebook
+output:
+  md_document:
+    variant: markdown_github
 ---
 
 # LOAD LIBRARIES
@@ -93,11 +95,12 @@ mutate_with_error = function(.data, f) {
 }
 ```
 
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 data.frame(X = c(0.647, 0.547, 0.529, 0.908, 0.835), Y = c(1.072, 0.905, 0.877, 1.503, 1.383)) %>%
   summarise(dX = se(X), dY = se(Y), X = mean(X), Y = mean(Y)) %>%
   mutate_with_error(Z ~ (X-Y)/(X+Y)^2) %>%
-  select(X, dX, Y, dY, Z, dZ)
+  select(X, dX, Y, dY, Z, dZ) %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 
@@ -119,7 +122,7 @@ str(ishihara2017_data)
 # PREPARE DATA
 There are many different ways in which R can prepare datasets. Nevertheless, the important bits are: the data must be summarised - i.e. the mean and standard error of the mean should be used below which must be placed in individual columns with names as indicated above.
 
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 vars_prot <- c("Prot_Ala", "Prot_Ser")
 vars_free <- c("Free_Ala", "Free_Ser")
 vars_glc  <- c("Glc")
@@ -138,7 +141,9 @@ ishihara2017_summary <- ishihara2017_data %>%
   #dcast(Genotype + time ~ variable)
   dcast(paste(paste(vars_id, collapse = " + "), "variable", sep = " ~ "))
 
-ishihara2017_summary
+ishihara2017_summary %>%
+  head() %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 # PULSE EXPERIMENTS
@@ -146,7 +151,7 @@ ishihara2017_summary
 We calculate the average enrichment of free labelled alanine and serine at ZT24 and then the $K_S$ - using Gaussian error propagation (REF).
 Data table is cast back into wide format prior to calculations.
 
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 ishihara_KS <- ishihara2017_summary %>%
   subset(time == 24) %>%
   mutate_with_error( SAt1t2 ~ (Free_Ala + Free_Ser) / 2 ) %>%  # calculate the correction factor
@@ -160,12 +165,13 @@ ishihara_KS <- ishihara2017_summary %>%
     ))
   )
 
-ishihara_KS
+ishihara_KS %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 ## Estimation of RGRSTR
 Cases in which calculations involve comparisons between time points demands reorganization of the data set we are using. Below we define a logic to create a individual column for values of each time point. This will be achieved by melting the original data set, renaming the variable names (i.e. append the time to their names) and finally re-casting the tidy data set into a wide data set; as follows:
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 ishihara_pulse_data <- ishihara2017_summary %>%
   subset(time %in% c(0, 24)) %>%
   melt(id.vars = vars_id) %>%
@@ -173,31 +179,35 @@ ishihara_pulse_data <- ishihara2017_summary %>%
   select(-time) %>%           # remove unwanted columns
   dcast(Genotype ~ variable)
 
-ishihara_pulse_data
+ishihara_pulse_data %>%
+  head() %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 ishihara_RGRp <- ishihara_pulse_data %>%
   mutate_with_error( RGRp ~ Glc_24 - Glc_0 ) %>%
   select(c("Genotype", "RGRp", "dRGRp"))
 
-ishihara_RGRp
+ishihara_RGRp %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 ## Estimation of KD
 Calculation of $K_{d_p}$ can then be easily achieved by joining the previously calculated datasets containing $K_s$ and $RGR^{STR}_p$ results and apply the $K_{d_p}$ formula.
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 ishihara_KDp <- join(ishihara_KS, ishihara_RGRp, by = "Genotype") %>%
   mutate_with_error( KDp_Ala ~ KS_Ala - RGRp ) %>%
   mutate_with_error( KDp_Ser ~ KS_Ser - RGRp ) %>%
   select(c("Genotype", "KDp_Ala", "dKDp_Ala", "KDp_Ser", "dKDp_Ser"))
 
-ishihara_KDp
+ishihara_KDp %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 # CHASE EXPERIMENTS
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 ishihara_chase_data <- ishihara2017_summary %>%
   subset(time %in% c(24, 120)) %>%
   melt(id.vars = vars_id) %>%
@@ -205,27 +215,23 @@ ishihara_chase_data <- ishihara2017_summary %>%
   select(-time) %>%           # remove unwanted columns
   dcast(Genotype ~ variable)
 
-ishihara_chase_data
+ishihara_chase_data %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 ## Estimation of KS
 Note that results are in #/day :$(120h - 24h) \div 24h/day = 4 days$; This value has to be input as 'numeric' and not as an object given the behaviour of `mutate_with_error()`.
 (This can be solved dynamically, to implement in the future.)
 
-```{r echo=TRUE}
-# ishihara_KSloss <- ishihara_chase_data %>%
-#   mutate_with_error( KSloss_Ala ~ (log(Prot_Ala_120) - log(Prot_Ala_24)) / (4) ) %>%
-#   mutate_with_error( KSloss_Ser ~ (log(Prot_Ser_120) - log(Prot_Ser_24)) / (4) ) %>%
-#   # remove unwanted columns
-#   select(c("Genotype", "KSloss_Ala", "dKSloss_Ala", "KSloss_Ser", "dKSloss_Ser"))
-
+```{r echo=TRUE, results='asis'}
 ishihara_KSloss <- ishihara_chase_data %>%
   mutate_with_error( KSloss_Ala ~ -((log(Prot_Ala_120) - log(Prot_Ala_24))) / (4) ) %>%
   mutate_with_error( KSloss_Ser ~ -((log(Prot_Ser_120) - log(Prot_Ser_24))) / (4) ) %>%
   # remove unwanted columns
   select(c("Genotype", "KSloss_Ala", "dKSloss_Ala", "KSloss_Ser", "dKSloss_Ser"))
 
-ishihara_KSloss
+ishihara_KSloss %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 ## Estimation of RGRSTR
@@ -233,16 +239,17 @@ Similarly to what was done for the pulse data, the $RGR^{STR}_c$ calculation als
 
 Note that results are in #/day :$(120h - 24h) \div 24h/day = 4 days$; This value has to be input as 'numeric' and not as an object given the behaviour of `mutate_with_error()`.
 
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 ishihara_RGRc <- ishihara_chase_data %>%
   mutate_with_error( RGRc ~ 1 - (Glc_120 / Glc_24)^(1/4) ) %>% 
   select(c("Genotype", "RGRc", "dRGRc"))
 
-ishihara_RGRc
+ishihara_RGRc %>%
+  pandoc.table(style = "rmarkdown")
 ```
 
 ## Estimation of KD
-```{r echo=TRUE}
+```{r echo=TRUE, results='asis'}
 # ishihara_KDc <- join(ishihara_KSloss, ishihara_RGRc, by = "Genotype") %>%
 #   mutate_with_error( KDc_Ala ~ -KSloss_Ala - RGRc ) %>%
 #   mutate_with_error( KDc_Ser ~ -KSloss_Ser - RGRc ) %>%
@@ -253,5 +260,6 @@ ishihara_KDc <- join(ishihara_KSloss, ishihara_RGRc, by = "Genotype") %>%
   mutate_with_error( KDc_Ser ~ KSloss_Ser - RGRc ) %>%
   select(c("Genotype", "KDc_Ala", "dKDc_Ala", "KDc_Ser", "dKDc_Ser"))
 
-ishihara_KDc
+ishihara_KDc %>%
+  pandoc.table(style = "rmarkdown")
 ```
