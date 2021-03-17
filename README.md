@@ -50,12 +50,21 @@ any given mathematical formula.
 To illustrate its working let’s assume one needs to propagate the error
 on the following *Z* calculation:
 
-$ Z = $
+<!-- $$ -->
+<!-- Z = \frac{(X-Y)}{(X+Y)^2} -->
+<!-- $$ -->
+
+![](images/eq_Z_12px.png)
 
 The Gaussian propagated error *d**Z* can be calculated by applying the
 chain-rule to *Z*, as follows:
 
-$ dZ = $
+$$
+dZ = \\sqrt{
+  \\left\\{ dX\*\\left\[         \\frac{1}{(X + Y)^2} - (X - Y) \* \\frac{2 \* (X + Y)}{\\left\[(X + Y)^2 \\right\]^2} \\right\]         \\right\\}^2 +
+  \\left\\{ dY\*\\left\[ -\\left( \\frac{1}{(X + Y)^2} + (X - Y) \* \\frac{2 \* (X + Y)}{\\left\[(X + Y)^2 \\right\]^2} \\right) \\right\] \\right\\}^2
+}
+$$
 
 The `mutate_with_error()` receives any given formula, construct the
 respective formula for error propagation and returns the results of both
