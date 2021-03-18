@@ -1,12 +1,14 @@
 # LOAD LIBRARIES
 
 ``` r
-library(reshape2) # melt(); citation("reshape2")
 library(dplyr)    # %>%;    citation("dplyr")
 library(plyr)     # ddply;  citation("plyr") # must be loaded after dplyr
-library(rlang)
+
+library(reshape2) # melt(); citation("reshape2")
 
 library(pander)   # pandoc.table
+
+library(rlang)
 ```
 
 # DEFINE FUNCTIONS
@@ -227,51 +229,6 @@ Table continues below
 |  0.00563  |  0.8891  |  0.8762  |  0.279  |  0.2188  |  0.2055  |
 | 0.002492  | 0.01502  | 0.01853  | 0.1034  | 0.07521  | 0.07053  |
 
-# PULSE EXPERIMENTS
-
-## Estimation of KS
-
-We calculate the average enrichment of free labelled alanine and serine
-at ZT24 and then the *K*<sub>*S*</sub> - using Gaussian error
-propagation (REF). Data table is cast back into wide format prior to
-calculations.
-
-``` r
-ishihara_KS <- ishihara2017_summary %>%
-  subset(time == 24) %>%
-  mutate_with_error( SAt1t2 ~ (Free_Ala + Free_Ser) / 2 ) %>%  # calculate the correction factor
-  mutate_with_error( KS_Ala ~ (Prot_Ala / SAt1t2) ) %>%        # calculate KS for Alanine
-  mutate_with_error( KS_Ser ~ (Prot_Ser / SAt1t2) ) %>%        # calculate KS for Serine
-  select(
-    -all_of(c( # remove unwanted columns
-      "time",
-      c(vars_prot, vars_free, vars_glc, "SAt1t2"),
-      paste0("d", c(vars_prot, vars_free, vars_glc, "SAt1t2"))
-    ))
-  )
-
-ishihara_KS %>%
-  pandoc.table(style = "rmarkdown")
-```
-
-|        | Genotype | KS_Ala | dKS_Ala  | KS_Ser | dKS_Ser  |
-|:------:|:--------:|:------:|:--------:|:------:|:--------:|
-| **2**  |   Ang0   | 0.2901 | 0.01449  | 0.2831 | 0.006022 |
-| **5**  |  Bsch2   | 0.2479 | 0.01058  | 0.2328 | 0.007288 |
-| **8**  |   Bu2    | 0.2694 | 0.01279  | 0.2543 | 0.007878 |
-| **11** |   Col0   | 0.2594 | 0.01888  | 0.2647 | 0.00542  |
-| **14** |   Cvi    | 0.2791 | 0.01621  | 0.2695 |  0.0117  |
-| **17** |   Da0    | 0.2761 |  0.0107  | 0.261  | 0.008535 |
-| **20** |   Ei2    | 0.2225 | 0.02387  | 0.2382 | 0.01134  |
-| **23** |   Kl0    | 0.266  |  0.0143  | 0.2522 | 0.009886 |
-| **26** |   Lip0   | 0.2773 |  0.0109  | 0.2667 | 0.005568 |
-| **29** |   Mh1    | 0.2696 | 0.004351 | 0.2523 |  0.0032  |
-| **32** |   Old1   | 0.2438 |  0.0172  | 0.2485 | 0.005321 |
-| **35** |  Peter   | 0.2676 | 0.006018 | 0.2533 | 0.003782 |
-| **38** |   RRS7   | 0.2416 | 0.01821  | 0.249  | 0.01267  |
-
-## Estimation of RGRSTR
-
 Cases in which calculations involve comparisons between time points
 demands reorganization of the data set we are using. Below we define a
 logic to create a individual column for values of each time point. This
@@ -334,6 +291,42 @@ Table continues below
 | 0.03227 | 0.2461 |  0.01117   |   0.2199    |   0.0018   |   0.2124    |
 | 0.03303 | 0.2622 |  0.01705   |   0.2375    |  0.01148   |   0.2245    |
 
+# PULSE EXPERIMENTS
+
+## Estimation of KS
+
+We calculate the average enrichment of free labelled alanine and serine
+at ZT24 and then the *K*<sub>*S*</sub> - using Gaussian error
+propagation (REF).
+
+``` r
+ishihara_KS <- ishihara_pulse_data %>%
+  mutate_with_error( KS_Ala ~ (Prot_Ala_24 - Prot_Ala_0) / Free_Ala_24 ) %>% # calculate KS for Alanine
+  mutate_with_error( KS_Ser ~ (Prot_Ser_24 - Prot_Ser_0) / Free_Ser_24 ) %>% # calculate KS for Serine
+  select(c("Genotype", "KS_Ala", "dKS_Ala", "KS_Ser", "dKS_Ser"))
+
+ishihara_KS %>%
+  pandoc.table(style = "rmarkdown")
+```
+
+| Genotype | KS_Ala | dKS_Ala  | KS_Ser | dKS_Ser  |
+|:--------:|:------:|:--------:|:------:|:--------:|
+|   Ang0   | 0.2766 | 0.01541  | 0.2688 | 0.006775 |
+|  Bsch2   | 0.2347 | 0.01172  | 0.2268 | 0.008706 |
+|   Bu2    | 0.2553 | 0.01699  | 0.2415 | 0.007508 |
+|   Col0   | 0.2478 | 0.01958  | 0.2541 | 0.005849 |
+|   Cvi    | 0.2663 | 0.02047  | 0.2659 | 0.01487  |
+|   Da0    |  0.25  | 0.009819 | 0.2541 | 0.01516  |
+|   Ei2    | 0.2096 |  0.0251  | 0.2254 | 0.01174  |
+|   Kl0    | 0.2522 | 0.01661  | 0.247  | 0.01096  |
+|   Lip0   | 0.2792 | 0.01383  | 0.2615 | 0.005613 |
+|   Mh1    | 0.2507 | 0.005979 | 0.243  | 0.004249 |
+|   Old1   | 0.232  | 0.01813  | 0.2423 | 0.00766  |
+|  Peter   | 0.2539 | 0.007817 | 0.2532 | 0.006606 |
+|   RRS7   | 0.2329 | 0.01943  | 0.2394 | 0.01338  |
+
+## Estimation of RGRSTR
+
 ``` r
 ishihara_RGRp <- ishihara_pulse_data %>%
   mutate_with_error( RGRp ~ Glc_24 - Glc_0 ) %>%
@@ -376,21 +369,21 @@ ishihara_KDp %>%
   pandoc.table(style = "rmarkdown")
 ```
 
-| Genotype |  KDp_Ala   | dKDp_Ala |  KDp_Ser  | dKDp_Ser |
-|:--------:|:----------:|:--------:|:---------:|:--------:|
-|   Ang0   |  0.05854   | 0.02788  |  0.05152  | 0.02457  |
-|  Bsch2   |  0.002872  | 0.01789  | -0.01218  | 0.01617  |
-|   Bu2    |  0.03913   | 0.02455  |  0.02403  | 0.02239  |
-|   Col0   |  0.04276   |  0.0259  |  0.04807  | 0.01854  |
-|   Cvi    |  0.06526   | 0.02492  |  0.05573  | 0.02225  |
-|   Da0    |  0.04697   |  0.0232  |  0.03185  | 0.02229  |
-|   Ei2    | -0.001915  | 0.03882  |  0.01386  | 0.03265  |
-|   Kl0    |  0.04471   | 0.02836  |  0.03094  | 0.02641  |
-|   Lip0   |  0.05236   | 0.02433  |  0.04178  | 0.02246  |
-|   Mh1    |  0.03488   | 0.02076  |  0.01757  | 0.02055  |
-|   Old1   | -0.009268  | 0.02973  | -0.004567 | 0.02483  |
-|  Peter   |  0.05056   | 0.02069  |  0.03629  | 0.02016  |
-|   RRS7   | -0.0009584 | 0.03395  | 0.006425  | 0.03132  |
+| Genotype |  KDp_Ala  | dKDp_Ala |  KDp_Ser  | dKDp_Ser |
+|:--------:|:---------:|:--------:|:---------:|:--------:|
+|   Ang0   |   0.045   | 0.02837  |  0.03718  | 0.02477  |
+|  Bsch2   | -0.01029  | 0.01859  | -0.01819  | 0.01685  |
+|   Bu2    |  0.02506  | 0.02698  |  0.0113   | 0.02226  |
+|   Col0   |  0.03114  | 0.02642  |  0.03745  | 0.01867  |
+|   Cvi    |  0.05246  | 0.02788  |  0.05208  | 0.02407  |
+|   Da0    |  0.02083  | 0.02281  |  0.02494  | 0.02557  |
+|   Ei2    | -0.01479  | 0.03959  | 0.001057  | 0.03279  |
+|   Kl0    |  0.0309   | 0.02959  |  0.02569  | 0.02683  |
+|   Lip0   |  0.05428  | 0.02578  |  0.03659  | 0.02247  |
+|   Mh1    |  0.01593  | 0.02116  | 0.008268  | 0.02074  |
+|   Old1   |  -0.0211  | 0.03028  | -0.01078  | 0.02543  |
+|  Peter   |  0.03691  | 0.02128  |  0.03613  | 0.02087  |
+|   RRS7   | -0.009683 | 0.03462  | -0.003207 | 0.03162  |
 
 # CHASE EXPERIMENTS
 
@@ -488,7 +481,6 @@ the future.)
 ishihara_KSloss <- ishihara_chase_data %>%
   mutate_with_error( KSloss_Ala ~ -((log(Prot_Ala_120) - log(Prot_Ala_24))) / (4) ) %>%
   mutate_with_error( KSloss_Ser ~ -((log(Prot_Ser_120) - log(Prot_Ser_24))) / (4) ) %>%
-  # remove unwanted columns
   select(c("Genotype", "KSloss_Ala", "dKSloss_Ala", "KSloss_Ser", "dKSloss_Ser"))
 
 ishihara_KSloss %>%
@@ -550,11 +542,6 @@ ishihara_RGRc %>%
 ## Estimation of KD
 
 ``` r
-# ishihara_KDc <- join(ishihara_KSloss, ishihara_RGRc, by = "Genotype") %>%
-#   mutate_with_error( KDc_Ala ~ -KSloss_Ala - RGRc ) %>%
-#   mutate_with_error( KDc_Ser ~ -KSloss_Ser - RGRc ) %>%
-#   select(c("Genotype", "KDc_Ala", "dKDc_Ala", "KDc_Ser", "dKDc_Ser"))
-
 ishihara_KDc <- join(ishihara_KSloss, ishihara_RGRc, by = "Genotype") %>%
   mutate_with_error( KDc_Ala ~ KSloss_Ala - RGRc ) %>%
   mutate_with_error( KDc_Ser ~ KSloss_Ser - RGRc ) %>%
