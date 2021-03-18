@@ -143,7 +143,7 @@ data.frame(X = c(0.647, 0.547, 0.529, 0.908, 0.835), Y = c(1.072, 0.905, 0.877, 
 # LOAD DATA
 
 The sections below demonstrates the procedure for calculating
-__*K<sub>s</sub>*__, __*K*<sub>*d*</sub>__ and __*RGR*<sup>*STR*</sup>__
+__*K<sub>s</sub>*__, __*K<sub>d</sub>*__ and __*RGR<sup>STR</sup>*__
 using data from Ishihara et al., 2017.
 
 Datasets from the original publication are available online at \[LINK\].
@@ -295,7 +295,7 @@ Table continues below
 ## Estimation of KS
 
 We calculate the average enrichment of free labelled alanine and serine
-at ZT24 and then the __*K*<sub>*S*</sub>__ - using Gaussian error
+at ZT24 and then the __*K<sub>S</sub>*__ - using Gaussian error
 propagation (REF).
 
 ``` r
@@ -353,10 +353,10 @@ ishihara_RGRp %>%
 
 ## Estimation of KD
 
-Calculation of __*K*<sub>*d*<sub>*p*</sub></sub>__ can then be easily
+Calculation of __*K<sub>d<sub>p</sub></sub>*__ can then be easily
 achieved by joining the previously calculated datasets containing
-__*K*<sub>*s*</sub>__ and __*RGR*<sub>*p*</sub><sup>*STR*</sup>__
-results and apply the __*K*<sub>*d*<sub>*p*</sub></sub>__ formula.
+__*K<sub>s</sub>*__ and __*RGR<sub>p</sub><sup>STR</sup>*__
+results and apply the __*K<sub>d<sub>p</sub></sub>*__ formula.
 
 ``` r
 ishihara_KDp <- join(ishihara_KS, ishihara_RGRp, by = "Genotype") %>%
@@ -471,7 +471,7 @@ Table continues below
 ## Estimation of KS
 
 Note that results are in \#/day
-:(120*h* − 24*h*) ÷ 24*h*/*d**a**y* = 4*d**a**y**s*; This value has to
+:(120*h* − 24*h*) ÷ 24*h*/*day* = 4*days*; This value has to
 be input as 'numeric' and not as an object given the behavior of
 `mutate_with_error()`. (This can be solved dynamically, to implement in
 the future.)
@@ -505,7 +505,7 @@ ishihara_KSloss %>%
 ## Estimation of RGRSTR
 
 Similarly to what was done for the pulse data, the
-__*RGR*<sub>*c*</sub><sup>*STR*</sup>__ calculation also demands
+__*RGR<sub>c</sub><sup>STR</sup>*__ calculation also demands
 re-organization of the original dataset.
 
 Note that results are in \#/day
