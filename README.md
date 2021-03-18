@@ -79,7 +79,7 @@ calculations. For this two arguments must be input to the
 (i.e. __*X*__ and __*Y*__ in the example above) plus the standard error of these
 means (i.e. __*dX*__ and __*dY*__) as individual columns. This nomenclature
 is important: all columns containing standard errors must be named with
-*d* appended to its respective mean values column. Then `f` receives a
+__d__ appended to its respective mean values column. Then `f` receives a
 `formula` object indicating the calculation to be done. *Vide* below for
 more details on the structure of the datasets.
 
@@ -90,7 +90,7 @@ transform the right-hand side of the formula `f` into a `character`
 string. Then, a new `character` string is constructed containing the
 full right-hand side of the formula that will be used to calculated the
 propagated error (*vide* below). Finally, the left-hand side of the new
-error propagation formula is created by appending the character *d* to
+error propagation formula is created by appending the character __d__ to
 the original formula left-hand side (i.e. __*Z*__ becomes __*dZ*__). The
 `mutate_with_error()` run these commands and return the results of the
 calculation defined by the formula and its associated propagated error
@@ -143,7 +143,7 @@ data.frame(X = c(0.647, 0.547, 0.529, 0.908, 0.835), Y = c(1.072, 0.905, 0.877, 
 # LOAD DATA
 
 The sections below demonstrates the procedure for calculating
-__*K*<sub>*s*</sub>__, __*K*<sub>*d*</sub>__ and __*RGR*<sup>*STR*</sup>__
+__*K<sub>s</sub>*__, __*K*<sub>*d*</sub>__ and __*RGR*<sup>*STR*</sup>__
 using data from Ishihara et al., 2017.
 
 Datasets from the original publication are available online at \[LINK\].
