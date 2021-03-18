@@ -300,8 +300,8 @@ propagation (REF).
 
 ``` r
 ishihara_KS <- ishihara_pulse_data %>%
-  mutate_with_error( KS_Ala ~ (Prot_Ala_24 - Prot_Ala_0) / Free_Ala_24 ) %>% # calculate KS for Alanine
-  mutate_with_error( KS_Ser ~ (Prot_Ser_24 - Prot_Ser_0) / Free_Ser_24 ) %>% # calculate KS for Serine
+  mutate_with_error( KS_Ala ~ (Prot_Ala_24 - Prot_Ala_0) / Free_Ala_24 ) %>%
+  mutate_with_error( KS_Ser ~ (Prot_Ser_24 - Prot_Ser_0) / Free_Ser_24 ) %>%
   select(c("Genotype", "KS_Ala", "dKS_Ala", "KS_Ser", "dKS_Ser"))
 
 ishihara_KS %>%
