@@ -471,7 +471,7 @@ Table continues below
 ## Estimation of KS
 
 Note that results are in \#/day
-:(120*h* − 24*h*) ÷ 24*h*/*day* = 4*days*; This value has to
+:(120*h* - 24*h*) &divide; 24*h*/*day* = 4*days*; This value has to
 be input as 'numeric' and not as an object given the behavior of
 `mutate_with_error()`. (This can be solved dynamically, to implement in
 the future.)
