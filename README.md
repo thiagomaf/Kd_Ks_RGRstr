@@ -470,11 +470,11 @@ Table continues below
 
 ## Estimation of KS
 
-Note that results are in \#/day
-:(120*h* - 24*h*) &divide; 24*h*/*day* = 4*days*; This value has to
-be input as 'numeric' and not as an object given the behavior of
-`mutate_with_error()`. (This can be solved dynamically, to implement in
-the future.)
+Note that results are in \#/day: 
+(120*h* - 24*h*) &divide; 24*h*/*day* = 4*days*;
+This value has to be input as 'numeric' and not as an object given the behavior 
+of `mutate_with_error()`. (This can be solved dynamically, to implement in the 
+future.)
 
 ``` r
 ishihara_KSloss <- ishihara_chase_data %>%
@@ -508,10 +508,10 @@ Similarly to what was done for the pulse data, the
 __*RGR<sub>c</sub><sup>STR</sup>*__ calculation also demands
 re-organization of the original dataset.
 
-Note that results are in \#/day
-:(120*h* − 24*h*) � 24*h*/*day* = 4*days*; This value has to
-be input as 'numeric' and not as an object given the behavior of
-`mutate_with_error()`.
+Note that results are in \#/day: 
+(120*h* - 24*h*) &divide; 24*h*/*day* = 4*days*;
+This value has to be input as 'numeric' and not as an object given the behavior
+of `mutate_with_error()`.
 
 ``` r
 ishihara_RGRc <- ishihara_chase_data %>%
