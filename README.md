@@ -21,9 +21,8 @@ measurement. The `na.rm = TRUE` argument indicates that by default this
 function ignores missing values.
 
 ``` r
-# x:  numeric
-
 se <- function(x, ...) {
+  # x:  numeric
   sd(x, ...) / sqrt(length(x))
 }
 ```
@@ -49,7 +48,7 @@ convenient integration with libraries of the tidyverse and the dplyr
 grammar. It builds on the mutate() function to apply the chain rule on
 any given mathematical formula.
 
-To illustrate its working let’s assume one needs to propagate the error
+To illustrate its working let's assume one needs to propagate the error
 on the following *Z* calculation:
 
 <!-- $$ -->
@@ -59,7 +58,7 @@ on the following *Z* calculation:
 <img src="images/eq_Z_18px.png" style="display: block; margin-left: auto; margin-right: auto; width: 50%;" />
 </center>
 
-The Gaussian propagated error *d**Z* can be calculated by applying the
+The Gaussian propagated error *dZ* can be calculated by applying the
 chain-rule to *Z*, as follows:
 
 <!-- $$ -->
@@ -77,8 +76,8 @@ respective formula for error propagation and returns the results of both
 calculations. For this two arguments must be input to the
 `mutate_with_error()` function. First, the `.data` argument receives a
 `data.frame` containing the mean values to be used in the calculation
-(i.e. *X* and *Y* in the example above) plus the standard error of these
-means (i.e. *d**X* and *d**Y*) as individual columns. This nomenclature
+(i.e. *X* and *Y* in the example above) plus the standard error of these
+means (i.e. *dX* and *dY*) as individual columns. This nomenclature
 is important: all columns containing standard errors must be named with
 *d* appended to its respective mean values column. Then `f` receives a
 `formula` object indicating the calculation to be done. *Vide* below for
@@ -92,7 +91,7 @@ string. Then, a new `character` string is constructed containing the
 full right-hand side of the formula that will be used to calculated the
 propagated error (*vide* below). Finally, the left-hand side of the new
 error propagation formula is created by appending the character *d* to
-the original formula left-hand side (i.e. *Z* becomes *d**Z*). The
+the original formula left-hand side (i.e. *Z* becomes *dZ*). The
 `mutate_with_error()` run these commands and return the results of the
 calculation defined by the formula and its associated propagated error
 appended to `.data`.
@@ -144,7 +143,7 @@ data.frame(X = c(0.647, 0.547, 0.529, 0.908, 0.835), Y = c(1.072, 0.905, 0.877, 
 # LOAD DATA
 
 The sections below demonstrates the procedure for calculating
-*K*<sub>*s*</sub>, *K*<sub>*d*</sub> and *R**G**R*<sup>*S**T**R*</sup>
+*K*<sub>*s*</sub>, *K*<sub>*d*</sub> and *RGR*<sup>*STR*</sup>
 using data from Ishihara et al., 2017.
 
 Datasets from the original publication are available online at \[LINK\].
@@ -182,7 +181,7 @@ str(ishihara2017_data)
 
 There are many different ways in which R can prepare datasets.
 Nevertheless, the important bits are: the data must be summarised -
-i.e. the mean and standard error of the mean should be used below which
+i.e. the mean and standard error of the mean should be used below which
 must be placed in individual columns with names as indicated above.
 
 ``` r
@@ -233,7 +232,7 @@ Cases in which calculations involve comparisons between time points
 demands reorganization of the data set we are using. Below we define a
 logic to create a individual column for values of each time point. This
 will be achieved by melting the original data set, renaming the variable
-names (i.e. append the time to their names) and finally re-casting the
+names (i.e. append the time to their names) and finally re-casting the
 tidy data set into a wide data set; as follows:
 
 ``` r
@@ -356,7 +355,7 @@ ishihara_RGRp %>%
 
 Calculation of *K*<sub>*d*<sub>*p*</sub></sub> can then be easily
 achieved by joining the previously calculated datasets containing
-*K*<sub>*s*</sub> and *R**G**R*<sub>*p*</sub><sup>*S**T**R*</sup>
+*K*<sub>*s*</sub> and *RGR*<sub>*p*</sub><sup>*STR*</sup>
 results and apply the *K*<sub>*d*<sub>*p*</sub></sub> formula.
 
 ``` r
@@ -473,7 +472,7 @@ Table continues below
 
 Note that results are in \#/day
 :(120*h* − 24*h*) ÷ 24*h*/*d**a**y* = 4*d**a**y**s*; This value has to
-be input as ‘numeric’ and not as an object given the behaviour of
+be input as 'numeric' and not as an object given the behavior of
 `mutate_with_error()`. (This can be solved dynamically, to implement in
 the future.)
 
@@ -510,8 +509,8 @@ Similarly to what was done for the pulse data, the
 re-organization of the original dataset.
 
 Note that results are in \#/day
-:(120*h* − 24*h*) ÷ 24*h*/*d**a**y* = 4*d**a**y**s*; This value has to
-be input as ‘numeric’ and not as an object given the behaviour of
+:(120*h* − 24*h*) � 24*h*/*day* = 4*days*; This value has to
+be input as 'numeric' and not as an object given the behavior of
 `mutate_with_error()`.
 
 ``` r
